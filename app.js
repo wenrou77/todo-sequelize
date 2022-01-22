@@ -24,11 +24,7 @@ app.use(methodOverride('_method'))
 
 usePassport(app)
 
-app.post('/users/login', passport.authenticate('local', {
-  successRedirect: '/',
-  failureRedirect: '/users/login'
-}))
-
+//首頁
 app.get('/', (req, res) => {
   return Todo.findAll({
     raw: true,
@@ -38,14 +34,19 @@ app.get('/', (req, res) => {
     .catch((error) => { return res.status(422).json(error) })
 })
 
+//登入
+app.post('/users/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/users/login'
+}))
 app.get('/users/login', (req, res) => {
   res.render('login')
 })
-
 app.post('/users/login', (req, res) => {
   res.send('login')
 })
 
+//註冊
 app.get('/users/register', (req, res) => {
   res.render('register')
 })
@@ -75,6 +76,7 @@ app.post('/users/register', (req, res) => {
   })
 })
 
+//登出
 app.get('/users/logout', (req, res) => {
   res.send('logout')
 })
@@ -104,6 +106,15 @@ app.put('/todos/:id', (req, res) => {
       return todo.save()
     })
     .then(() => res.redirect(`/todos/${id}`))
+    .catch(error => console.log(error))
+})
+
+//刪除
+app.delete('/todos/:id', (req, res) => {
+  const id = req.params.id
+  return Todo.findByPk(id)
+    .then(todo => todo.destroy())
+    .then(() => res.redirect('/'))
     .catch(error => console.log(error))
 })
 
