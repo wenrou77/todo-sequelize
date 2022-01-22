@@ -1,4 +1,6 @@
+const passport = require('passport')
 const express = require('express')
+const session = require('express-session')
 const exphbs = require('express-handlebars')
 const methodOverride = require('method-override')
 const bcrypt = require('bcryptjs')
@@ -6,14 +8,26 @@ const bcrypt = require('bcryptjs')
 const app = express()
 const PORT = 3000
 const db = require('./models')
+const usePassport = require('./config/passport')
 const Todo = db.Todo
 const User = db.User
 
 app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
+app.use(session({
+  secret: 'ThisIsMySecret',
+  resave: false,
+  saveUninitialized: true
+}))
 app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
 
+usePassport(app)
+
+app.post('/users/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/users/login'
+}))
 
 app.get('/', (req, res) => {
   return Todo.findAll({
@@ -65,10 +79,31 @@ app.get('/users/logout', (req, res) => {
   res.send('logout')
 })
 
+//查詢
 app.get('/todos/:id', (req, res) => {
   const id = req.params.id
   return Todo.findByPk(id)
     .then(todo => res.render('detail', { todo: todo.toJSON() }))
+    .catch(error => console.log(error))
+})
+
+//修改
+app.get('/todos/:id/edit', (req, res) => {
+  const id = req.params.id
+  return Todo.findByPk(id)
+    .then(todo => res.render('edit', { todo: todo.get() }))
+    .catch(error => console.log(error))
+})
+app.put('/todos/:id', (req, res) => {
+  const id = req.params.id
+  const { name, isDone } = req.body
+  return Todo.findByPk(id)
+    .then(todo => {
+      todo.name = name
+      todo.isDone = isDone === 'on'
+      return todo.save()
+    })
+    .then(() => res.redirect(`/todos/${id}`))
     .catch(error => console.log(error))
 })
 
