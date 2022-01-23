@@ -4,11 +4,10 @@ const session = require('express-session')
 const exphbs = require('express-handlebars')
 const methodOverride = require('method-override')
 const bcrypt = require('bcryptjs')
-
+const usePassport = require('./config/passport')
 const app = express()
 const PORT = 3000
 const db = require('./models')
-const usePassport = require('./config/passport')
 const Todo = db.Todo
 const User = db.User
 
@@ -79,6 +78,18 @@ app.post('/users/register', (req, res) => {
 //登出
 app.get('/users/logout', (req, res) => {
   res.send('logout')
+})
+
+//新增
+app.get('/todos/new', (req, res) => {
+  return res.render('new')
+})
+app.post('/todos', (req, res) => {
+  const UserId = req.user.id
+  const name = req.body.name
+  return Todo.create({ name, UserId })
+    .then(() => res.redirect('/'))
+    .catch(error => console.log(error))
 })
 
 //查詢
