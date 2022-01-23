@@ -16,7 +16,7 @@ This is a website created by node.js Express.
 
 1. Open terminal and git clone
 ```
-git clone https://github.com/wenrou77/todo_sequelize.git
+git clone https://github.com/wenrou77/todo-sequelize.git
 ```
 
 2. Initialization
